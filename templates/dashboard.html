@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - JobMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>JobMatch AI</span>
+                </div>
+                <button class="sidebar-toggle">☰</button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="/cv-improver" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Analyse CV</span>
+                </a>
+                <a href="/job-generator" class="nav-link">
+                    <i class="fas fa-robot"></i>
+                    <span>Générateur IA</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showJobOffers()">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Offres d'emploi</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showStatistics()">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Statistiques</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showFavorites()">
+                    <i class="fas fa-star"></i>
+                    <span>Favoris</span>
+                </a>
+                <a href="/profile" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-details">
+                        <h4>{{ current_user.firstname }} {{ current_user.lastname }}</h4>
+                        <p>{{ current_user.profession or 'Professionnel' }}</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1>Bonjour, {{ current_user.firstname }}! 👋</h1>
+                    <p>Bienvenue sur votre tableau de bord intelligent</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="quickAnalysis()">
+                        <i class="fas fa-bolt"></i>
+                        Analyse Rapide
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div id="dashboard-content">
+                <!-- Stats Grid -->
+                <section class="stats-grid">
+                    <div class="stat-card blue" onclick="showAnalyses()">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-search"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-analyses">{{ analyses_count or 0 }}</h3>
+                            <p>Analyses CV</p>
+                            <span class="trend">+{{ analyses_trend or 12 }}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card green" onclick="showMatches()">
+                        <div class="stat-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="avg-score">{{ avg_score or 85 }}%</h3>
+                            <p>Score Moyen</p>
+                            <span class="trend">+{{ score_trend or 5 }}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card orange" onclick="showJobOffers()">
+                        <div class="stat-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="job-offers">{{ job_offers_count or 0 }}</h3>
+                            <p>Offres Générées</p>
+                            <span class="trend">+{{ offers_trend or 8 }}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card purple" onclick="showProfile()">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="profile-complete">{{ profile_complete or 90 }}%</h3>
+                            <p>Profil Complété</p>
+                            <span class="trend">+{{ profile_trend or 3 }}%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="quick-actions">
+                    <h2>Actions Rapides</h2>
+                    <div class="actions-grid">
+                        <div class="action-card" onclick="location.href='/cv-improver'">
+                            <div class="action-icon">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            <h3>Analyser un CV</h3>
+                            <p>Upload et analyse intelligente</p>
+                        </div>
+                        <div class="action-card" onclick="location.href='/job-generator'">
+                            <div class="action-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3>Générer des Offres</h3>
+                            <p>Créer des offres avec l'IA</p>
+                        </div>
+                        <div class="action-card" onclick="showRecentAnalyses()">
+                            <div class="action-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <h3>Historique</h3>
+                            <p>Voir les analyses récentes</p>
+                        </div>
+                        <div class="action-card" onclick="showRecommendations()">
+                            <div class="action-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h3>Recommandations</h3>
+                            <p>Suggestions personnalisées</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts Section -->
+                <section class="charts-section">
+                    <h2>Analyse de Performance</h2>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Évolution des Scores</h3>
+                            <canvas id="scores-chart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Distribution des Matches</h3>
+                            <canvas id="distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Activity -->
+                <section class="activity-section">
+                    <h2>Activités Récentes</h2>
+                    <div class="activity-list" id="activity-list">
+                        {% if recent_activities %}
+                            {% for activity in recent_activities %}
+                            <div class="activity-item">
+                                <span class="activity-icon">{{ activity.icon or '📊' }}</span>
+                                <div class="activity-content">
+                                    <p>{{ activity.description }}</p>
+                                    <span>{{ activity.time_ago }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="activity-item">
+                                <span class="activity-icon">🎯</span>
+                                <div class="activity-content">
+                                    <p>Bienvenue sur JobMatch AI!</p>
+                                    <span>Commencez par analyser votre premier CV</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Job Offers Preview -->
+                <section class="offers-preview">
+                    <h2>Dernières Offres Générées</h2>
+                    <div class="offers-grid" id="recent-offers">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="quick-analysis-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Analyse Rapide de CV</h3>
+                <button class="close-btn" onclick="closeModal('quick-analysis-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" id="quick-upload">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h4>Glissez votre CV ici</h4>
+                    <p>Ou cliquez pour parcourir</p>
+                    <input type="file" id="cv-file" accept=".pdf" style="display: none;">
+                </div>
+                <div class="job-select">
+                    <label>Type de poste visé:</label>
+                    <select id="job-type">
+                        <option value="development">Développement</option>
+                        <option value="design">Design</option>
+                        <option value="data">Data</option>
+                        <option value="management">Management</option>
+                        <option value="qa">QA</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('quick-analysis-modal')">Annuler</button>
+                <button class="btn btn-primary" onclick="startQuickAnalysis()">
+                    <i class="fas fa-play"></i>
+                    Lancer l'analyse
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // Dashboard Manager
+        class DashboardManager {
+            constructor() {
+                this.initCharts();
+                this.loadRecentOffers();
+                this.setupEventListeners();
+            }
+
+            initCharts() {
+                // Scores Evolution Chart
+                const scoresCtx = document.getElementById('scores-chart').getContext('2d');
+                new Chart(scoresCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                        datasets: [{
+                            label: 'Score de Match',
+                            data: [75, 82, 78, 85, 88, 92],
+                            borderColor: '#FF6B35',
+                            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+
+                // Distribution Chart
+                const distCtx = document.getElementById('distribution-chart').getContext('2d');
+                new Chart(distCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Excellent (90-100%)', 'Bon (70-89%)', 'Moyen (50-69%)', 'Faible (<50%)'],
+                        datasets: [{
+                            data: [35, 45, 15, 5],
+                            backgroundColor: [
+                                '#004E89',
+                                '#FF6B35',
+                                '#FFD23F',
+                                '#FF6B6B'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            async loadRecentOffers() {
+                try {
+                    const response = await fetch('/api/recent-offers');
+                    const offers = await response.json();
+                    this.displayRecentOffers(offers);
+                } catch (error) {
+                    console.log('Chargement des offres simulé...');
+                    this.displayMockOffers();
+                }
+            }
+
+            displayRecentOffers(offers) {
+                const container = document.getElementById('recent-offers');
+                container.innerHTML = offers.slice(0, 3).map(offer => `
+                    <div class="offer-card">
+                        <div class="offer-header">
+                            <h4>${offer.title}</h4>
+                            <span class="company">${offer.company}</span>
+                        </div>
+                        <div class="offer-details">
+                            <span class="location">${offer.location}</span>
+                            <span class="salary">${offer.salary_min}k€ - ${offer.salary_max}k€</span>
+                        </div>
+                        <div class="offer-skills">
+                            ${offer.required_skills.slice(0, 3).map(skill => 
+                                `<span class="skill-tag">${skill}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            displayMockOffers() {
+                const mockOffers = [
+                    {
+                        title: 'Développeur Python Senior',
+                        company: 'TechCorp',
+                        location: 'Paris',
+                        salary_min: 65,
+                        salary_max: 85,
+                        required_skills: ['Python', 'Django', 'PostgreSQL']
+                    },
+                    {
+                        title: 'Data Scientist',
+                        company: 'DataSoft',
+                        location: 'Lyon',
+                        salary_min: 55,
+                        salary_max: 75,
+                        required_skills: ['Python', 'Machine Learning', 'TensorFlow']
+                    },
+                    {
+                        title: 'Designer UX/UI',
+                        company: 'CreativeHub',
+                        location: 'Remote',
+                        salary_min: 45,
+                        salary_max: 60,
+                        required_skills: ['Figma', 'Adobe XD', 'Prototyping']
+                    }
+                ];
+                this.displayRecentOffers(mockOffers);
+            }
+
+            setupEventListeners() {
+                // Sidebar toggle
+                const sidebarToggle = document.querySelector('.sidebar-toggle');
+                const sidebar = document.getElementById('sidebar');
+                
+                if (sidebarToggle && sidebar) {
+                    sidebarToggle.addEventListener('click', () => {
+                        sidebar.classList.toggle('collapsed');
+                    });
+                }
+
+                // Quick upload
+                const uploadArea = document.getElementById('quick-upload');
+                const fileInput = document.getElementById('cv-file');
+                
+                if (uploadArea && fileInput) {
+                    uploadArea.addEventListener('click', () => fileInput.click());
+                    
+                    uploadArea.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.add('drag-over');
+                    });
+                    
+                    uploadArea.addEventListener('dragleave', () => {
+                        uploadArea.classList.remove('drag-over');
+                    });
+                    
+                    uploadArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.remove('drag-over');
+                        if (e.dataTransfer.files.length > 0) {
+                            fileInput.files = e.dataTransfer.files;
+                        }
+                    });
+                }
+            }
+        }
+
+        // Navigation functions
+        function showAnalyses() {
+            location.href = '/cv-improver';
+        }
+
+        function showMatches() {
+            location.href = '/cv-improver#results';
+        }
+
+        function showJobOffers() {
+            location.href = '/job-generator';
+        }
+
+        function showStatistics() {
+            alert('Statistiques détaillées en cours de développement...');
+        }
+
+        function showFavorites() {
+            alert('Favoris en cours de développement...');
+        }
+
+        function showProfile() {
+            location.href = '/profile';
+        }
+
+        function quickAnalysis() {
+            document.getElementById('quick-analysis-modal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function startQuickAnalysis() {
+            const fileInput = document.getElementById('cv-file');
+            const jobType = document.getElementById('job-type').value;
+            
+            if (!fileInput.files.length) {
+                alert('Veuillez sélectionner un fichier CV');
+                return;
+            }
+            
+            // Simulate analysis
+            closeModal('quick-analysis-modal');
+            location.href = `/cv-improver?job_type=${jobType}`;
+        }
+
+        function refreshDashboard() {
+            location.reload();
+        }
+
+        function showRecentAnalyses() {
+            location.href = '/cv-improver#history';
+        }
+
+        function showRecommendations() {
+            alert('Recommandations personnalisées en cours de développement...');
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter?')) {
+                location.href = '/logout';
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboardManager = new DashboardManager();
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

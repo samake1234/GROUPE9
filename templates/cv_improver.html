@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Improver - Améliorer Votre CV</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .upload-section h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .upload-section p {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-name {
+            margin-top: 15px;
+            color: #27ae60;
+            font-weight: 500;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .improvements-list {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .improvements-list h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .improvements-list ul {
+            list-style: none;
+        }
+
+        .improvements-list li {
+            padding: 8px 0;
+            color: #2c3e50;
+        }
+
+        .improvements-list li:before {
+            content: "✓ ";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .cv-preview {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .cv-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .cv-data-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .cv-data-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .cv-data-item p {
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e6f6;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            color: white;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.success {
+            background: #27ae60;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            color: #7f8c8d;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .cv-data {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 CV Improver</h1>
+            <p>Améliorez votre CV et téléchargez-le au format professionnel</p>
+        </div>
+
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-icon">📄</div>
+            <h3>Téléversez votre CV en PDF</h3>
+            <p>Glissez votre fichier ici ou cliquez pour le sélectionner</p>
+            <button class="upload-btn">Choisir un fichier</button>
+            <input type="file" id="fileInput" accept=".pdf" />
+            <div class="file-name" id="fileName"></div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>⏳ Amélioration en cours...</p>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="improvements-list" id="improvementsList"></div>
+
+            <h3 style="margin-bottom: 15px; color: #2c3e50;">📋 Données du CV</h3>
+            <div class="cv-preview" id="cvPreview"></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="downloadHTML()">
+                    ⬇️ Télécharger le CV (HTML)
+                </button>
+                <button class="btn btn-primary" onclick="viewPreview()">
+                    👁️ Aperçu du CV
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    🔄 Recommencer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closePreview()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Aperçu du CV</h2>
+            <div id="previewContent" style="border: 1px solid #e0e0e0; padding: 20px; border-radius: 6px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentCVData = null;
+        let currentHTML = null;
+
+        // Drag and drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('click', () => fileInput.click());
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.background = '#f0f2ff';
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.style.background = '#f8f9fa';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.background = '#f8f9fa';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = `✓ ${file.name}`;
+                document.getElementById('fileName').style.display = 'block';
+                improveCVFile(file);
+            }
+        }
+
+        function improveCVFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            fetch('/api/improve-cv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.success) {
+                    currentCVData = data.data;
+                    currentHTML = data.html;
+                    displayResults(data);
+                    showToast('CV amélioré avec succès! ✨', 'success');
+                } else {
+                    showToast('Erreur: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                showToast('Erreur: ' + error.message, 'error');
+            });
+        }
+
+        function displayResults(data) {
+            // Afficher les améliorations
+            const improvementsList = document.getElementById('improvementsList');
+            let improvementsHTML = '<h3>✨ Améliorations effectuées:</h3><ul>';
+            
+            data.improvements.forEach(improvement => {
+                improvementsHTML += `<li>${improvement}</li>`;
+            });
+            improvementsHTML += '</ul>';
+            improvementsList.innerHTML = improvementsHTML;
+
+            // Afficher les données du CV
+            const cvPreview = document.getElementById('cvPreview');
+            let previewHTML = '';
+
+            const fields = {
+                'nom': 'Nom',
+                'prenom': 'Prénom',
+                'email': 'Email',
+                'telephone': 'Téléphone',
+                'localisation': 'Localisation',
+                'titre_professionnel': 'Titre Professionnel'
+            };
+
+            for (const [key, label] of Object.entries(fields)) {
+                if (data.data[key]) {
+                    previewHTML += `
+                        <div class="cv-data-item">
+                            <h4>${label}</h4>
+                            <p>${data.data[key]}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Compétences
+            if (data.data.competences && data.data.competences.length > 0) {
+                previewHTML += `
+                    <div class="cv-data-item">
+                        <h4>Compétences</h4>
+                        <p>${data.data.competences.join(', ')}</p>
+                    </div>
+                `;
+            }
+
+            // Langues
+            if (data.data.langues && data.data.langues.length > 0) {
+                previewHTML += `
+                    <div class="cv-data-item">
+                        <h4>Langues</h4>
+                        <p>${data.data.langues.join(', ')}</p>
+                    </div>
+                `;
+            }
+
+            cvPreview.innerHTML = previewHTML;
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function downloadHTML() {
+            if (!currentHTML) {
+                showToast('Pas de CV à télécharger', 'error');
+                return;
+            }
+
+            const data = {
+                html: currentHTML,
+                nom: currentCVData?.nom || 'CV'
+            };
+
+            fetch('/api/download-cv-html', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${currentCVData?.nom || 'CV'}_Ameliore.html`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showToast('CV téléchargé avec succès! ✨', 'success');
+            })
+            .catch(error => {
+                showToast('Erreur: ' + error.message, 'error');
+            });
+        }
+
+        function viewPreview() {
+            if (!currentHTML) {
+                showToast('Pas d\'aperçu disponible', 'error');
+                return;
+            }
+
+            document.getElementById('previewContent').innerHTML = currentHTML;
+            document.getElementById('previewModal').style.display = 'block';
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function resetForm() {
+            fileInput.value = '';
+            document.getElementById('fileName').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            currentCVData = null;
+            currentHTML = null;
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Fermer le modal en cliquant dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('previewModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

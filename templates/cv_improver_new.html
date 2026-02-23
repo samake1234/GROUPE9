@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse CV{% endblock %}
+{% block page_title %}Analyser Votre CV{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-zone {
+        border: 2px dashed var(--accent-color);
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #f1f5ff;
+    }
+
+    .upload-zone:hover {
+        background-color: #e6efff;
+        border-color: var(--accent-light);
+    }
+
+    .upload-zone.dragover {
+        background-color: #e6efff;
+        border-color: var(--accent-light);
+        transform: scale(1.02);
+    }
+
+    .upload-zone i {
+        font-size: 48px;
+        color: var(--accent-color);
+        margin-bottom: 16px;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .analysis-section {
+        display: none;
+    }
+
+    .analysis-section.active {
+        display: block;
+    }
+
+    .recommendation-item {
+        background-color: #f8fafc;
+        border-left: 4px solid var(--accent-color);
+        padding: 16px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .recommendation-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .score-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .score-high {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .score-medium {
+        background-color: #fef3c7;
+        color: #b45309;
+    }
+
+    .score-low {
+        background-color: #fee2e2;
+        color: #7f1d1d;
+    }
+
+    .keyword-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .keyword-tag {
+        background-color: #e2e8f0;
+        color: #1e293b;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .keyword-tag.missing {
+        background-color: #fee2e2;
+        color: #7f1d1d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Upload Section -->
+    <div class="card">
+        <h2 class="card-title">Importer Votre CV</h2>
+        <p style="color: #64748b; margin-bottom: 24px;">
+            Téléchargez votre CV en format PDF pour une analyse détaillée.
+        </p>
+        
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" class="file-input" accept=".pdf">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h3 style="color: #1e293b; margin-bottom: 8px;">Glissez-déposez votre CV ici</h3>
+            <p style="color: #64748b;">ou cliquez pour parcourir</p>
+            <p style="color: #94a3b8; font-size: 12px; margin-top: 12px;">Format supporté: PDF (max 10MB)</p>
+        </div>
+
+        <div id="uploadProgress" style="margin-top: 16px; display: none;">
+            <div style="background-color: #f1f5ff; border-radius: 8px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #1e293b; font-weight: 500;">Analyse en cours...</span>
+                    <span id="progressPercent" style="color: var(--accent-color); font-weight: 500;">0%</span>
+                </div>
+                <div style="background-color: #e2e8f0; border-radius: 4px; height: 4px; overflow: hidden;">
+                    <div id="progressBar" style="background-color: var(--accent-color); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Results -->
+    <div class="analysis-section" id="analysisResults">
+        <!-- Overall Score -->
+        <div class="card">
+            <h2 class="card-title">Résultats de l'Analyse</h2>
+            <div style="text-align: center; padding: 24px;">
+                <div style="display: inline-block; width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--accent-color) 0deg, var(--accent-color) var(--score-percent), #e2e8f0 var(--score-percent)); display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                    <div style="width: 110px; height: 110px; border-radius: 50%; background-color: white; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                        <span style="font-size: 36px; font-weight: 700; color: var(--accent-color);" id="overallScore">0</span>
+                        <span style="color: #64748b; font-size: 12px;">Score Global</span>
+                    </div>
+                </div>
+                <p id="scoreMessage" style="color: #64748b; margin-top: 12px; font-size: 14px;"></p>
+            </div>
+        </div>
+
+        <!-- Strengths -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
+                Points Forts
+            </h2>
+            <div id="strengthsList"></div>
+        </div>
+
+        <!-- Areas to Improve -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-lightbulb" style="color: #f59e0b; margin-right: 8px;"></i>
+                Domaines à Améliorer
+            </h2>
+            <div id="improvementList"></div>
+        </div>
+
+        <!-- Keywords Analysis -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-tags" style="color: var(--accent-color); margin-right: 8px;"></i>
+                Analyse des Mots-clés
+            </h2>
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #1e293b; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Mots-clés Détectés</h3>
+                <div class="keyword-list" id="detectedKeywords"></div>
+            </div>
+            <div>
+                <h3 style="color: #1e293b; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Mots-clés Recommandés</h3>
+                <div class="keyword-list" id="recommendedKeywords"></div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <button class="btn btn-primary" onclick="downloadReport()">
+                    <i class="fas fa-download"></i> Télécharger le Rapport
+                </button>
+                <button class="btn btn-secondary" onclick="resetAnalysis()">
+                    <i class="fas fa-redo"></i> Analyser un Autre CV
+                </button>
+                <a href="/job-generator" class="btn btn-primary">
+                    <i class="fas fa-robot"></i> Générer des Offres
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const uploadProgress = document.getElementById('uploadProgress');
+const progressBar = document.getElementById('progressBar');
+const progressPercent = document.getElementById('progressPercent');
+const analysisResults = document.getElementById('analysisResults');
+
+// Upload zone interactions
+uploadZone.addEventListener('click', () => fileInput.click());
+
+uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        uploadFile();
+    }
+});
+
+fileInput.addEventListener('change', uploadFile);
+
+function uploadFile() {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    // Validation
+    if (!file.name.endsWith('.pdf')) {
+        showNotification('Veuillez sélectionner un fichier PDF', 'error');
+        return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        showNotification('Le fichier dépasse 10MB', 'error');
+        return;
+    }
+
+    // Upload
+    uploadProgress.style.display = 'block';
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Simulate upload progress
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 30;
+        if (progress > 90) progress = 90;
+        updateProgress(progress);
+    }, 200);
+
+    fetch('/api/upload-cv', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        clearInterval(interval);
+        updateProgress(100);
+        
+        setTimeout(() => {
+            displayAnalysisResults(data);
+            uploadProgress.style.display = 'none';
+            analysisResults.classList.add('active');
+            showNotification('Analyse terminée avec succès!', 'success');
+        }, 500);
+    })
+    .catch(error => {
+        clearInterval(interval);
+        showNotification('Erreur lors de l\'analyse', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function updateProgress(percent) {
+    progressBar.style.width = percent + '%';
+    progressPercent.textContent = Math.round(percent) + '%';
+}
+
+function displayAnalysisResults(data) {
+    const score = data.score || 75;
+    document.getElementById('overallScore').textContent = Math.round(score);
+    document.getElementById('scoreMessage').textContent = 
+        score >= 70 ? 'Excellent! Votre CV est bien structuré.' :
+        score >= 50 ? 'Bon CV. Quelques améliorations possibles.' :
+        'Il y a des points à améliorer. Consultez les recommandations ci-dessous.';
+}
+
+function downloadReport() {
+    showNotification('Rapport en cours de téléchargement...', 'info');
+    // Implementation de téléchargement du rapport
+}
+
+function resetAnalysis() {
+    fileInput.value = '';
+    analysisResults.classList.remove('active');
+    uploadProgress.style.display = 'none';
+}
+</script>
+{% endblock %}

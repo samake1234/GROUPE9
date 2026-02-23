@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - JobMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-enhanced.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Enhanced Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="brand-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>JobMatch AI</span>
+                </a>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="/cv-improver" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Analyse CV</span>
+                </a>
+                <a href="/job-generator" class="nav-link">
+                    <i class="fas fa-robot"></i>
+                    <span>Générateur IA</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showJobOffers()">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Offres d'emploi</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showStatistics()">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Statistiques</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showFavorites()">
+                    <i class="fas fa-star"></i>
+                    <span>Favoris</span>
+                </a>
+                <a href="/profile" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </a>
+                <a href="#" class="nav-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="dashboard-content">
+            <!-- Enhanced Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1>Bonjour, {{ current_user.username }}! 👋</h1>
+                    <p>Bienvenue sur votre tableau de bord personnel</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="quickAnalysis()">
+                        <i class="fas fa-bolt"></i>
+                        Analyse rapide
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </header>
+
+            <!-- Enhanced Stats Grid -->
+            <section class="stats-grid">
+                <div class="stat-card blue" onclick="showAnalyses()">
+                    <div class="stat-icon">📊</div>
+                    <h3 id="total-analyses">{{ analyses_count or 0 }}</h3>
+                    <p>Total des analyses CV</p>
+                    <span class="trend">
+                        <i class="fas fa-arrow-up"></i> +12% ce mois
+                    </span>
+                </div>
+                
+                <div class="stat-card green" onclick="showMatches()">
+                    <div class="stat-icon">🎯</div>
+                    <h3 id="avg-score">{{ avg_score or '0' }}%</h3>
+                    <p>Score de matching moyen</p>
+                    <span class="trend">
+                        <i class="fas fa-arrow-up"></i> +5% cette semaine
+                    </span>
+                </div>
+                
+                <div class="stat-card orange" onclick="showJobOffers()">
+                    <div class="stat-icon">💼</div>
+                    <h3 id="job-offers">{{ job_offers_count or 0 }}</h3>
+                    <p>Offres générées</p>
+                    <span class="trend">
+                        <i class="fas fa-arrow-up"></i> +8 nouvelles
+                    </span>
+                </div>
+                
+                <div class="stat-card purple" onclick="showProfile()">
+                    <div class="stat-icon">👤</div>
+                    <h3 id="profile-complete">{{ profile_complete or 0 }}%</h3>
+                    <p>Profil complété</p>
+                    <span class="trend">
+                        <i class="fas fa-check"></i> À jour
+                    </span>
+                </div>
+            </section>
+
+            <!-- Enhanced Actions Grid -->
+            <section class="actions-grid">
+                <div class="action-card analyze" onclick="location.href='/cv-improver'">
+                    <div class="action-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h3>Analyser un CV</h3>
+                    <p>Upload et analyse intelligente de votre CV</p>
+                </div>
+                
+                <div class="action-card generate" onclick="location.href='/job-generator'">
+                    <div class="action-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>Générer des offres</h3>
+                    <p>Créez des offres d'emploi personnalisées</p>
+                </div>
+                
+                <div class="action-card history" onclick="showRecentAnalyses()">
+                    <div class="action-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Historique</h3>
+                    <p>Consultez vos analyses précédentes</p>
+                </div>
+                
+                <div class="action-card recommend" onclick="showRecommendations()">
+                    <div class="action-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Recommandations</h3>
+                    <p>Suggestions personnalisées IA</p>
+                </div>
+            </section>
+
+            <!-- Enhanced Charts Section -->
+            <section class="charts-section">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    Vos performances
+                </h2>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Évolution des scores</h3>
+                        <div class="chart-container">
+                            <canvas id="scores-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>Distribution des matches</h3>
+                        <div class="chart-container">
+                            <canvas id="distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced Activity Section -->
+            <section class="activity-section">
+                <h2>
+                    <i class="fas fa-clock"></i>
+                    Activité récente
+                </h2>
+                <div class="activity-list" id="activity-list">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">{{ activity.icon }}</div>
+                        <div class="activity-content">
+                            <p>{{ activity.description }}</p>
+                            <span>{{ activity.time_ago }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Enhanced Recent Offers -->
+            <section class="recent-offers-section">
+                <h2>
+                    <i class="fas fa-briefcase"></i>
+                    Offres récentes générées
+                </h2>
+                <div class="offers-grid" id="recent-offers">
+                    <!-- Recent offers will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Quick Analysis Modal -->
+    <div class="modal" id="quick-analysis-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Analyse Rapide de CV</h2>
+                <button class="modal-close" onclick="closeModal('quick-analysis-modal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" id="quick-upload" onclick="document.getElementById('cv-file').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Glissez votre CV ici</h3>
+                    <p>ou cliquez pour sélectionner un fichier</p>
+                    <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="display: none;">
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <label for="job-type" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Type de poste recherché</label>
+                    <select id="job-type" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px;">
+                        <option value="">Sélectionnez un type de poste</option>
+                        <option value="developement">Développement</option>
+                        <option value="design">Design</option>
+                        <option value="data">Data Science</option>
+                        <option value="management">Management</option>
+                        <option value="qa">QA Testing</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; margin-top: 2rem;" onclick="startQuickAnalysis()">
+                    <i class="fas fa-play"></i>
+                    Lancer l'analyse
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // Enhanced sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        // Load sidebar state
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                sidebar.classList.add('collapsed');
+            }
+            
+            // Initialize dashboard
+            if (window.dashboardManager) {
+                window.dashboardManager.init();
+            } else {
+                // Fallback initialization
+                initCharts();
+                loadRecentOffers();
+            }
+        });
+
+        // Mobile sidebar handling
+        function handleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+            }
+        }
+
+        window.addEventListener('resize', handleMobileSidebar);
+        handleMobileSidebar();
+
+        // Enhanced animations
+        document.querySelectorAll('.stat-card, .action-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K for quick analysis
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                quickAnalysis();
+            }
+            
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+        });
+
+        // Enhanced notifications
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Initialize charts with enhanced options
+        function initCharts() {
+            // Scores Chart
+            const scoresCtx = document.getElementById('scores-chart');
+            if (scoresCtx) {
+                new Chart(scoresCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                        datasets: [{
+                            label: 'Score de Match',
+                            data: [75, 82, 78, 85, 88, 92],
+                            borderColor: '#FF6B35',
+                            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: '#FF6B35',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8,
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                callbacks: {
+                                    label: (context) => `Score: ${context.parsed.y}%`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { 
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    callback: (value) => value + '%'
+                                }
+                            },
+                            x: {
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: 'rgba(255, 255, 255, 0.8)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Distribution Chart
+            const distCtx = document.getElementById('distribution-chart');
+            if (distCtx) {
+                new Chart(distCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Excellent (90-100%)', 'Bon (70-89%)', 'Moyen (50-69%)', 'Faible (<50%)'],
+                        datasets: [{
+                            data: [35, 45, 15, 5],
+                            backgroundColor: [
+                                '#004E89',
+                                '#FF6B35',
+                                '#FFD23F',
+                                '#ef4444'
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    padding: 15,
+                                    font: { size: 12 }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Load recent offers with enhanced UI
+        async function loadRecentOffers() {
+            try {
+                const response = await fetch('/api/recent-offers');
+                if (response.ok) {
+                    const offers = await response.json();
+                    displayRecentOffers(offers);
+                } else {
+                    displayMockOffers();
+                }
+            } catch (error) {
+                displayMockOffers();
+            }
+        }
+
+        function displayRecentOffers(offers) {
+            const container = document.getElementById('recent-offers');
+            if (!container) return;
+
+            container.innerHTML = offers.slice(0, 3).map(offer => `
+                <div class="offer-card" onclick="viewOffer('${offer.id}')">
+                    <div class="offer-header">
+                        <div>
+                            <h4>${offer.title}</h4>
+                            <span class="company">${offer.company}</span>
+                        </div>
+                    </div>
+                    <div class="offer-details">
+                        <span class="location"><i class="fas fa-map-marker-alt"></i> ${offer.location}</span>
+                        <span class="salary"><i class="fas fa-euro-sign"></i> ${offer.salary_min}k€ - ${offer.salary_max}k€</span>
+                    </div>
+                    <div class="offer-skills">
+                        ${offer.required_skills.slice(0, 3).map(skill => 
+                            `<span class="skill-tag">${skill}</span>`
+                        ).join('')}
+                    </div>
+                    <div class="offer-footer">
+                        <span class="date">${offer.posted_date}</span>
+                        <button class="btn-offer" onclick="saveOffer('${offer.id}', event)">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayMockOffers() {
+            const mockOffers = [
+                {
+                    id: 'mock_1',
+                    title: 'Développeur Python Senior',
+                    company: 'TechCorp',
+                    location: 'Paris',
+                    salary_min: 65,
+                    salary_max: 85,
+                    required_skills: ['Python', 'Django', 'PostgreSQL'],
+                    posted_date: '15/01/2024'
+                },
+                {
+                    id: 'mock_2',
+                    title: 'Data Scientist',
+                    company: 'DataSoft',
+                    location: 'Lyon',
+                    salary_min: 55,
+                    salary_max: 75,
+                    required_skills: ['Python', 'Machine Learning', 'TensorFlow'],
+                    posted_date: '10/01/2024'
+                },
+                {
+                    id: 'mock_3',
+                    title: 'Designer UX/UI',
+                    company: 'CreativeHub',
+                    location: 'Remote',
+                    salary_min: 45,
+                    salary_max: 60,
+                    required_skills: ['Figma', 'Adobe XD', 'Prototyping'],
+                    posted_date: '05/01/2024'
+                }
+            ];
+            displayRecentOffers(mockOffers);
+        }
+
+        // Global functions
+        function showAnalyses() { location.href = '/cv-improver'; }
+        function showMatches() { location.href = '/cv-improver#results'; }
+        function showJobOffers() { showNotification('Offres d\'emploi en cours de développement...'); }
+        function showStatistics() { showNotification('Statistiques détaillées en cours de développement...'); }
+        function showFavorites() { showNotification('Favoris en cours de développement...'); }
+        function showProfile() { location.href = '/profile'; }
+        function quickAnalysis() { document.getElementById('quick-analysis-modal').style.display = 'block'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        function refreshDashboard() { location.reload(); }
+        function showRecentAnalyses() { location.href = '/cv-improver#history'; }
+        function showRecommendations() { showNotification('Recommandations personnalisées en cours de développement...'); }
+        function logout() { if (confirm('Êtes-vous sûr de vouloir vous déconnecter?')) { location.href = '/logout'; } }
+        function viewOffer(offerId) { showNotification(`Affichage de l'offre ${offerId}`); }
+        function saveOffer(offerId, event) {
+            event.stopPropagation();
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
+            
+            if (icon.classList.contains('fa-bookmark')) {
+                icon.classList.remove('fa-bookmark');
+                icon.classList.add('fa-bookmark-o');
+                showNotification('Offre retirée des favoris');
+            } else {
+                icon.classList.remove('fa-bookmark-o');
+                icon.classList.add('fa-bookmark');
+                showNotification('Offre ajoutée aux favoris');
+            }
+        }
+
+        function startQuickAnalysis() {
+            const fileInput = document.getElementById('cv-file');
+            const jobType = document.getElementById('job-type').value;
+            
+            if (!fileInput.files.length) {
+                showNotification('Veuillez sélectionner un fichier CV', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const modal = document.getElementById('quick-analysis-modal');
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #FF6B35;"></i>
+                    <h3>Analyse en cours...</h3>
+                    <p>Traitement de votre CV avec notre IA</p>
+                </div>
+            `;
+            
+            // Simulate analysis and redirect
+            setTimeout(() => {
+                closeModal('quick-analysis-modal');
+                location.href = `/cv-improver?job_type=${jobType}&quick=true`;
+            }, 2000);
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.3s ease;
+            font-weight: 500;
+            max-width: 400px;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .notification i {
+            font-size: 1.25rem;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .loading-state i {
+            margin-bottom: 1rem;
+        }
+        
+        .btn-offer {
+            background: none;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            color: #FF6B35;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-offer:hover {
+            background: rgba(255, 107, 53, 0.1);
+            border-color: #FF6B35;
+        }
+        
+        .offer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .offer-footer .date {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</body>
+</html>

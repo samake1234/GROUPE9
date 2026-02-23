@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JobMatch AI{% endblock %} - Tableau de Bord</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="brand-text">JobMatch AI</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-text">Tableau de bord</span>
+                </a>
+                <a href="/profile" class="nav-item {% if request.endpoint == 'profile' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span class="nav-text">Mon Profil</span>
+                </a>
+                <a href="/cv-improver" class="nav-item {% if request.endpoint == 'cv_improver' %}active{% endif %}">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="nav-text">Analyse CV</span>
+                </a>
+                <a href="/job-generator" class="nav-item {% if request.endpoint == 'job_generator' %}active{% endif %}">
+                    <i class="fas fa-robot"></i>
+                    <span class="nav-text">Générateur IA</span>
+                </a>
+                <a href="/job-offers" class="nav-item {% if request.endpoint == 'job_offers' %}active{% endif %}">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="nav-text">Offres d'emploi</span>
+                </a>
+                <a href="/favorites" class="nav-item {% if request.endpoint == 'favorites' %}active{% endif %}">
+                    <i class="fas fa-star"></i>
+                    <span class="nav-text">Favoris</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/logout" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-text">Déconnexion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">{% block page_title %}Accueil{% endblock %}</h1>
+                </div>
+                <div class="top-bar-right">
+                    <div class="user-info">
+                        {% if current_user %}
+                        <span class="username">{{ current_user.username }}</span>
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

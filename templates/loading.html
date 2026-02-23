@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobMatch - Chargement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --dark: #0F1419;
+            --light: #F9FAFB;
+            --accent: #FFD700;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--dark) 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background decorative elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -20%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .loading-container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            max-width: 500px;
+        }
+
+        /* Logo section with glass effect */
+        .logo-section {
+            margin-bottom: 50px;
+            animation: slideInDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .logo-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-icon {
+            font-size: 56px;
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #FF6B35, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideInDown 0.8s ease 0.1s both;
+        }
+
+        .tagline {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            animation: slideInDown 0.8s ease 0.2s both;
+        }
+
+        /* Modern spinner */
+        .spinner-container {
+            margin: 50px 0;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .spinner-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            animation: pulse 1.4s infinite;
+        }
+
+        .spinner-dot:nth-child(1) { animation-delay: 0s; }
+        .spinner-dot:nth-child(2) { animation-delay: 0.2s; }
+        .spinner-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Progress bar */
+        .progress-section {
+            margin: 40px 0;
+        }
+
+        .progress-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+            animation: progress 2.5s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+        }
+
+        /* Status text */
+        .status-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 30px;
+            letter-spacing: 0.5px;
+            animation: slideInUp 0.8s ease 0.3s both;
+        }
+
+        .status-message {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            margin-top: 10px;
+            min-height: 20px;
+            animation: slideInUp 0.8s ease 0.4s both;
+        }
+
+        /* Tips section */
+        .tips-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            animation: slideInUp 0.8s ease 0.5s both;
+        }
+
+        .tip-title {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .tip-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Credit section */
+        .credit-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideInUp 0.8s ease 0.6s both;
+        }
+
+        .credit-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .credit-text strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0;
+            }
+            50% {
+                width: 100%;
+            }
+            100% {
+                width: 0;
+            }
+        }
+
+        /* Fade out when loaded */
+        body.loaded .loading-container {
+            animation: fadeOut 0.8s ease forwards;
+        }
+
+        body.loaded .credit-section {
+            animation: none;
+            opacity: 1;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-text {
+                font-size: 28px;
+            }
+
+            .status-text {
+                font-size: 14px;
+            }
+
+            .logo-wrapper {
+                width: 80px;
+                height: 80px;
+            }
+
+            .logo-icon {
+                font-size: 48px;
+            }
+
+            .tips-section {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenu de chargement -->
+    <div class="loading-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo-wrapper">
+                <div class="logo-icon">J</div>
+            </div>
+            <h1 class="logo-text">JobMatch</h1>
+            <p class="tagline">Analyse Professionnelle</p>
+        </div>
+
+        <!-- Spinner -->
+        <div class="spinner-container">
+            <div class="spinner-dot"></div>
+            <div class="spinner-dot"></div>
+            <div class="spinner-dot"></div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-label">Chargement en cours</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- Status Text -->
+        <div class="status-text">Initialisation de votre session</div>
+        <div class="status-message" id="statusMessage">Veuillez patienter...</div>
+
+        <!-- Tips Section -->
+        <div class="tips-section">
+            <div class="tip-title">💡 Conseil du jour</div>
+            <div class="tip-text" id="tipText">
+                Optimisez votre profil pour attirer les meilleures offres d'emploi
+            </div>
+        </div>
+    </div>
+
+    <!-- Credit Section (stays visible) -->
+    <div class="credit-section">
+        <p class="credit-text">Projet conçu par <strong>Dr. Castro Hounmenou</strong></p>
+    </div>
+
+    <script>
+        // Liste des conseils du jour
+        const tips = [
+            "Optimisez votre profil pour attirer les meilleures offres d'emploi",
+            "Un CV bien structuré augmente vos chances de 40%",
+            "Personnalisez votre CV pour chaque candidature",
+            "Mettez en avant vos réalisations concrètes",
+            "Utilisez des mots-clés pertinents dans votre profil",
+            "Gardez votre CV à jour régulièrement",
+            "Une bonne photo de profil fait la différence",
+            "Soyez authentique et professionnel"
+        ];
+
+        // Messages de statut
+        const messages = [
+            "Initialisation de votre session...",
+            "Chargement des données...",
+            "Préparation de votre tableau de bord...",
+            "Vérification de vos informations...",
+            "Finalisation du chargement..."
+        ];
+
+        let messageIndex = 0;
+        const statusMessageEl = document.getElementById('statusMessage');
+        const tipTextEl = document.getElementById('tipText');
+
+        // Afficher un conseil aléatoire
+        function showRandomTip() {
+            const randomIndex = Math.floor(Math.random() * tips.length);
+            tipTextEl.textContent = tips[randomIndex];
+        }
+
+        // Afficher les messages de statut en succession
+        function updateStatusMessage() {
+            if (messageIndex < messages.length) {
+                statusMessageEl.textContent = messages[messageIndex];
+                messageIndex++;
+                setTimeout(updateStatusMessage, 800);
+            }
+        }
+
+        // Initialiser
+        showRandomTip();
+        updateStatusMessage();
+
+        // Masquer le loader après le chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.body.classList.add('loaded');
+                // Vous pouvez décommenter pour la redirection automatique
+                // setTimeout(() => window.location.href = '/', 600);
+            }, 3000);
+        });
+
+        window.addEventListener('load', function() {
+            // Le chargement des ressources est terminé
+            setTimeout(function() {
+                if (!document.body.classList.contains('loaded')) {
+                    document.body.classList.add('loaded');
+                }
+            }, 3500);
+        });
+    </script>
+</body>
+</html>

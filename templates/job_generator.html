@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Offres IA - JobMatch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <style>
+        .generator-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .generator-header {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .generator-header h1 {
+            font-size: 40px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #FF6B35 0%, #004E89 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .generator-header p {
+            font-size: 16px;
+            color: #666;
+            max-width: 600px;
+            margin: 0;
+        }
+
+        .controls-panel {
+            background: white;
+            border: 2px solid #e0e7ff;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .controls-panel-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .controls-panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr auto;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: flex-end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 10px 14px;
+            border: 2px solid #e0e7ff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-generate {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #FF6B35, #FF8C42);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .offer-card {
+            background: white;
+            border: 2px solid #e0e7ff;
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .offer-card:hover {
+            transform: translateY(-12px);
+            border-color: #FF6B35;
+            box-shadow: 0 25px 60px rgba(255, 107, 53, 0.2);
+        }
+
+        .offer-card:nth-child(1) { animation-delay: 0.1s; }
+        .offer-card:nth-child(2) { animation-delay: 0.2s; }
+        .offer-card:nth-child(3) { animation-delay: 0.3s; }
+        .offer-card:nth-child(4) { animation-delay: 0.4s; }
+        .offer-card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .offer-header {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e7ff;
+        }
+
+        .offer-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 0 0 8px 0;
+        }
+
+        .offer-company {
+            font-size: 14px;
+            color: #FF6B35;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .offer-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .meta-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(255, 107, 53, 0.1);
+            color: #FF6B35;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .offer-salary {
+            font-size: 18px;
+            font-weight: 800;
+            color: #2ECC71;
+            margin: 15px 0;
+        }
+
+        .offer-skills {
+            margin: 20px 0;
+        }
+
+        .skills-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .skills-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .skill-badge {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(0, 78, 137, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%);
+            border: 1px solid rgba(0, 78, 137, 0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .offer-benefits {
+            background: #f8fafb;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .benefits-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .benefit-item {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .benefit-item::before {
+            content: '✓';
+            color: #2ECC71;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .offer-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e7ff;
+            background: transparent;
+            color: var(--secondary);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .btn-action:hover {
+            border-color: #FF6B35;
+            background: rgba(255, 107, 53, 0.05);
+            color: #FF6B35;
+        }
+
+        .btn-apply {
+            background: linear-gradient(135deg, #FF6B35, #FF8C42);
+            color: white;
+            border-color: #FF6B35;
+        }
+
+        .btn-apply:hover {
+            background: linear-gradient(135deg, #FF7D47, #FF9E54);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: #2ECC71;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .generated-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #FF6B35, #FF8C42);
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="/" class="logo">
+                    <div class="logo-wrapper">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="JobMatch Logo"
+                            class="logo-image">
+                        <span class="logo-text">JobMatch</span>
+                    </div>
+                </a>
+            </div>
+
+            <ul class="navbar-menu" id="navbar-menu">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                </li>
+            </ul>
+
+            <div class="navbar-actions">
+                <div class="navbar-controls">
+                    <a href="/dashboard" class="btn-icon" title="Dashboard">
+                        <span class="icon">📊</span>
+                    </a>
+                </div>
+                <div class="navbar-auth">
+                    <a href="/logout" class="btn-nav btn-nav-primary">Déconnexion</a>
+                </div>
+                <button class="hamburger" id="hamburger">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Wrapper with Sidebar -->
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-header-content">
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-avatar">🤖</div>
+                        <div class="sidebar-user-details">
+                            <div class="sidebar-username">Générateur</div>
+                            <div class="sidebar-status">Actif</div>
+                        </div>
+                    </div>
+                    <button class="sidebar-toggle" title="Réduire/Développer">➡️</button>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Navigation</div>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-nav-item">
+                            <a href="/dashboard" class="sidebar-nav-link">
+                                <span class="sidebar-nav-icon">📊</span>
+                                <span class="sidebar-nav-text">Tableau de Bord</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-nav-item">
+                            <a href="/job-generator" class="sidebar-nav-link active">
+                                <span class="sidebar-nav-icon">🤖</span>
+                                <span class="sidebar-nav-text">Générateur d'Offres</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-nav-item">
+                            <a href="/cv-improver" class="sidebar-nav-link">
+                                <span class="sidebar-nav-icon">✨</span>
+                                <span class="sidebar-nav-text">Améliorer CV</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Outils</div>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-nav-item">
+                            <a href="#" class="sidebar-nav-link" onclick="alert('Historique - Bientôt disponible'); return false;">
+                                <span class="sidebar-nav-icon">📜</span>
+                                <span class="sidebar-nav-text">Historique</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-nav-item">
+                            <a href="#" class="sidebar-nav-link" onclick="alert('Favoris - Bientôt disponible'); return false;">
+                                <span class="sidebar-nav-icon">⭐</span>
+                                <span class="sidebar-nav-text">Favoris</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Paramètres</div>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-nav-item">
+                            <a href="/profile" class="sidebar-nav-link">
+                                <span class="sidebar-nav-icon">👤</span>
+                                <span class="sidebar-nav-text">Profil</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-nav-item">
+                            <a href="#" class="sidebar-nav-link" onclick="alert('Premium - À venir'); return false;">
+                                <span class="sidebar-nav-icon">💎</span>
+                                <span class="sidebar-nav-text">Passer Premium</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-content">
+                    <button class="footer-button" onclick="window.location.href='/logout';">
+                        🚪 Déconnexion
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="generator-container">
+            <!-- Header -->
+            <div class="generator-header">
+                <h1>🤖 Générateur d'Offres IA</h1>
+                <p>Créez des offres d'emploi réalistes et adaptées automatiquement grâce à notre intelligence artificielle</p>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="controls-panel-header">
+                    <h2 class="controls-panel-title">Paramètres de Génération</h2>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="roleType">Type de Rôle</label>
+                        <select id="roleType">
+                            <option value="">Aléatoire</option>
+                            <option value="development">Développement</option>
+                            <option value="design">Design</option>
+                            <option value="management">Management</option>
+                            <option value="data">Data & Analytics</option>
+                            <option value="qa">QA & Testing</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="count">Nombre d'Offres</label>
+                        <input type="number" id="count" min="1" max="20" value="5" />
+                    </div>
+
+                    <div class="control-group">
+                        <label for="location">Localisation</label>
+                        <select id="location">
+                            <option value="">Aléatoire</option>
+                            <option value="Paris">Paris</option>
+                            <option value="Île-de-France">Île-de-France</option>
+                            <option value="Lyon">Lyon</option>
+                            <option value="Toulouse">Toulouse</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-generate" id="generateBtn" onclick="generateOffers()">
+                            <span>⚡ Générer</span>
+                        </button>
+                        <button class="btn-generate" id="generateCVBtn" style="background: linear-gradient(135deg, #004E89, #006AB3);" onclick="generateFromCV()" title="Générer à partir de votre CV">
+                            <span>📄 CV</span>
+                        </button>
+                        <button class="btn-generate" id="clearBtn" style="background: #999; font-size: 13px;" onclick="clearOffers()" title="Effacer toutes les offres">
+                            <span>🗑️ Effacer</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+                </div>
+            </div>
+
+            <!-- Offers Container -->
+            <div id="offersContainer" class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <div class="empty-title">Aucune offre générée</div>
+                <div class="empty-text">Cliquez sur "Générer Offres" pour créer des offres d'emploi automatiquement</div>
+            </div>
+        </div>
+    </main>
+    </div>
+
+    <script>
+        function generateOffers() {
+            const roleType = document.getElementById('roleType').value;
+            const count = parseInt(document.getElementById('count').value);
+            const btn = document.getElementById('generateBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Génération...';
+
+            fetch('/api/generate-job-offers-batch', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    role_type: roleType || null,
+                    count: count
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayOffers(data.offers);
+                    showToast(`${data.total} offre(s) générée(s) avec succès!`);
+                } else {
+                    showToast('Erreur: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Erreur: ' + error, 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<span>⚡ Générer Offres</span>';
+            });
+        }
+
+        function generateFromCV() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const formData = new FormData();
+                formData.append('pdf_file', file);
+                formData.append('count', 5);
+
+                const btn = document.getElementById('generateCVBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading-spinner"></span> Analyse...';
+
+                fetch('/api/generate-offers-by-cv', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayOffers(data.offers);
+                        showToast(`Offres générées basées sur vos compétences!`);
+                    } else {
+                        showToast('Erreur: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Erreur: ' + error, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>📄 À partir du CV</span>';
+                });
+            };
+            input.click();
+        }
+
+        function displayOffers(offers) {
+            const container = document.getElementById('offersContainer');
+            
+            let html = '<div class="offers-grid">';
+            
+            offers.forEach(offer => {
+                const salaryRange = `${(offer.salary_min / 1000).toFixed(0)}k - ${(offer.salary_max / 1000).toFixed(0)}k €`;
+                const skillsHtml = offer.required_skills.map(skill => 
+                    `<span class="skill-badge">${skill}</span>`
+                ).join('');
+                
+                const benefitsHtml = offer.benefits.slice(0, 4).map(benefit => 
+                    `<div class="benefit-item">${benefit}</div>`
+                ).join('');
+
+                const matchScore = offer.match_score ? 
+                    `<span class="meta-tag" style="background: rgba(46, 204, 113, 0.1); color: #2ECC71; border-color: rgba(46, 204, 113, 0.3);">Match: ${Math.round(offer.match_score)}%</span>` : 
+                    '';
+
+                html += `
+                    <div class="offer-card">
+                        <div class="offer-header">
+                            <h3 class="offer-title">${offer.title}</h3>
+                            <p class="offer-company">${offer.company}</p>
+                            <div class="offer-meta">
+                                <span class="meta-tag">📍 ${offer.location}</span>
+                                <span class="meta-tag">📋 ${offer.contract_type}</span>
+                                ${matchScore}
+                            </div>
+                        </div>
+
+                        <div class="offer-salary">${salaryRange}</div>
+
+                        <div class="offer-skills">
+                            <div class="skills-label">Compétences requises</div>
+                            <div class="skills-list">
+                                ${skillsHtml}
+                            </div>
+                        </div>
+
+                        <div class="offer-benefits">
+                            <div class="benefits-label">Avantages</div>
+                            ${benefitsHtml}
+                        </div>
+
+                        <div class="offer-actions">
+                            <button class="btn-action btn-apply" onclick="applyOffer('${offer.id}')">Candidater</button>
+                            <button class="btn-action" onclick="viewOffer('${offer.id}')">Détails</button>
+                        </div>
+
+                        <div class="generated-badge">🤖 Générée par IA</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function clearOffers() {
+            const container = document.getElementById('offersContainer');
+            container.innerHTML = `
+                <div class="empty-icon">🎯</div>
+                <div class="empty-title">Aucune offre générée</div>
+                <div class="empty-text">Cliquez sur "Générer Offres" pour créer des offres d'emploi automatiquement</div>
+            `;
+        }
+
+        function applyOffer(offerId) {
+            showToast(`Application à l'offre ${offerId} en cours...`);
+            // Implémenter la logique de candidature
+        }
+
+        function viewOffer(offerId) {
+            showToast(`Visualisation de l'offre ${offerId}`);
+            // Implémenter la logique d'affichage détaillé
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialiser au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            // Le contenu est vide par défaut
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+</body>
+</html>

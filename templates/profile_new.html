@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Profil{% endblock %}
+{% block page_title %}Paramètres du Profil{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+        flex-shrink: 0;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .profile-avatar:hover::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+    }
+
+    .profile-info h1 {
+        font-size: 28px;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .profile-info p {
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .toggle-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        background-color: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: 0.3s;
+        border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background-color: var(--accent-color);
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    .danger-zone {
+        border: 1px solid #fee2e2;
+        background-color: #fef2f2;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 32px;
+    }
+
+    .danger-zone h3 {
+        color: #7f1d1d;
+        margin-bottom: 12px;
+    }
+
+    .danger-zone p {
+        color: #991b1b;
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Profile Header -->
+    <div class="card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-info">
+                <h1>{{ current_user.username }}</h1>
+                <p>{{ current_user.email }}</p>
+                <p style="color: #94a3b8; font-size: 12px;">Membre depuis le 02 Février 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="card">
+        <h2 class="card-title">Informations Personnelles</h2>
+        <form method="POST" action="/profile/update">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" value="Prénom" placeholder="Votre prénom">
+                </div>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" value="NOM" placeholder="Votre nom">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" value="{{ current_user.email }}" placeholder="votre.email@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" placeholder="+33 6 00 00 00 00">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Métier / Titre Professionnel</label>
+                    <input type="text" placeholder="Ex: Développeur Full Stack">
+                </div>
+                <div class="form-group">
+                    <label>Localisation</label>
+                    <input type="text" placeholder="Ex: Paris, France">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Bio Professionnelle</label>
+                <textarea placeholder="Parlez de vous, vos expériences et vos objectifs..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Domaines de Compétences</label>
+                <input type="text" placeholder="Ex: Python, JavaScript, React, SQL (séparés par des virgules)">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer les Modifications
+            </button>
+        </form>
+    </div>
+
+    <!-- Professional Details -->
+    <div class="card">
+        <h2 class="card-title">Détails Professionnels</h2>
+        <form method="POST" action="/profile/update">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Niveau d'Expérience</label>
+                    <select>
+                        <option>Sélectionner...</option>
+                        <option>Moins de 1 an</option>
+                        <option>1-3 ans</option>
+                        <option>3-5 ans</option>
+                        <option>5-10 ans</option>
+                        <option>Plus de 10 ans</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Secteur d'Activité</label>
+                    <select>
+                        <option>Sélectionner...</option>
+                        <option>Informatique</option>
+                        <option>Finance</option>
+                        <option>Santé</option>
+                        <option>Éducation</option>
+                        <option>Autre</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Type de Poste Souhaité</label>
+                <input type="text" placeholder="Ex: CDI, CDD, Stage, Freelance">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+        </form>
+    </div>
+
+    <!-- Preferences -->
+    <div class="card">
+        <h2 class="card-title">Préférences</h2>
+        
+        <div class="toggle-group">
+            <div>
+                <h3 style="color: #1e293b; margin: 0; margin-bottom: 4px;">Notifications par Email</h3>
+                <p style="color: #64748b; font-size: 14px; margin: 0;">Recevoir les nouvelles offres pertinentes</p>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-group">
+            <div>
+                <h3 style="color: #1e293b; margin: 0; margin-bottom: 4px;">Statistiques Publiques</h3>
+                <p style="color: #64748b; font-size: 14px; margin: 0;">Afficher vos statistiques sur votre profil public</p>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-group">
+            <div>
+                <h3 style="color: #1e293b; margin: 0; margin-bottom: 4px;">Partage de Données</h3>
+                <p style="color: #64748b; font-size: 14px; margin: 0;">Permettre à nos partenaires d'analyser vos données</p>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Security -->
+    <div class="card">
+        <h2 class="card-title">Sécurité</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <a href="#" class="btn btn-secondary" onclick="return false;">
+                <i class="fas fa-key"></i> Changer le Mot de Passe
+            </a>
+            <a href="#" class="btn btn-secondary" onclick="return false;">
+                <i class="fas fa-shield-alt"></i> Authentification 2FA
+            </a>
+            <a href="#" class="btn btn-secondary" onclick="return false;">
+                <i class="fas fa-history"></i> Historique des Connexions
+            </a>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+        <h3>Zone de Danger</h3>
+        <p>Une fois supprimé, il n'y a aucun retour en arrière. Veuillez être sûr.</p>
+        <button class="btn btn-danger" onclick="confirmDelete()">
+            <i class="fas fa-trash"></i> Supprimer le Compte
+        </button>
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    if (confirm('Êtes-vous sûr de vouloir supprimer définitivement votre compte? Toutes vos données seront perdues.')) {
+        showNotification('Fonction non disponible pour l\'instant', 'info');
+    }
+}
+</script>
+{% endblock %}

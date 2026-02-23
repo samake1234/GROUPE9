@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de Bord{% endblock %}
+{% block page_title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section -->
+    <div class="card">
+        <h2 class="card-title">Bienvenue, {{ current_user.username }} 👋</h2>
+        <p style="color: #64748b; margin-bottom: 20px;">
+            Gérez votre CV, générez des offres d'emploi personnalisées et trouvez les meilleures opportunités.
+        </p>
+        <div class="grid">
+            <div class="stat-card">
+                <i class="fas fa-file-alt" style="font-size: 32px;"></i>
+                <div class="stat-value">0</div>
+                <div class="stat-label">CVs Analysés</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-briefcase" style="font-size: 32px;"></i>
+                <div class="stat-value">0</div>
+                <div class="stat-label">Offres Générées</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-star" style="font-size: 32px;"></i>
+                <div class="stat-value">0</div>
+                <div class="stat-label">Favoris</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line" style="font-size: 32px;"></i>
+                <div class="stat-value">0%</div>
+                <div class="stat-label">Compatibilité Moyenne</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <h2 class="card-title">Actions Rapides</h2>
+        <div class="grid">
+            <a href="/cv-improver" class="btn btn-primary" style="justify-content: center; padding: 15px;">
+                <i class="fas fa-file-pdf"></i>
+                <span>Analyser un CV</span>
+            </a>
+            <a href="/job-generator" class="btn btn-primary" style="justify-content: center; padding: 15px;">
+                <i class="fas fa-robot"></i>
+                <span>Générer des Offres</span>
+            </a>
+            <a href="/job-offers" class="btn btn-primary" style="justify-content: center; padding: 15px;">
+                <i class="fas fa-search"></i>
+                <span>Voir les Offres</span>
+            </a>
+            <a href="/profile" class="btn btn-primary" style="justify-content: center; padding: 15px;">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres du Profil</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card">
+        <h2 class="card-title">Activité Récente</h2>
+        <div style="padding: 20px; text-align: center; color: #94a3b8;">
+            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+            <p>Aucune activité récente</p>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="card">
+        <h2 class="card-title">Fonctionnalités Principales</h2>
+        <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="feature-item" style="padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div style="color: var(--accent-color); font-size: 24px; margin-bottom: 10px;">
+                    <i class="fas fa-wand-magic-wand"></i>
+                </div>
+                <h3 style="color: #1e293b; margin-bottom: 8px;">Analyse Intelligente</h3>
+                <p style="color: #64748b; font-size: 14px;">
+                    Analysez votre CV et recevez des recommandations personnalisées pour l'améliorer.
+                </p>
+            </div>
+            <div class="feature-item" style="padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div style="color: var(--accent-color); font-size: 24px; margin-bottom: 10px;">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 style="color: #1e293b; margin-bottom: 8px;">IA Générative</h3>
+                <p style="color: #64748b; font-size: 14px;">
+                    Générez des offres d'emploi adaptées à votre profil avec notre IA avancée.
+                </p>
+            </div>
+            <div class="feature-item" style="padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div style="color: var(--accent-color); font-size: 24px; margin-bottom: 10px;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 style="color: #1e293b; margin-bottom: 8px;">Statistiques</h3>
+                <p style="color: #64748b; font-size: 14px;">
+                    Suivez vos progrès avec des statistiques détaillées et des graphiques.
+                </p>
+            </div>
+            <div class="feature-item" style="padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div style="color: var(--accent-color); font-size: 24px; margin-bottom: 10px;">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 style="color: #1e293b; margin-bottom: 8px;">Favoris</h3>
+                <p style="color: #64748b; font-size: 14px;">
+                    Sauvegardez vos offres préférées et gérez-les facilement.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .feature-item {
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+    }
+</style>
+{% endblock %}

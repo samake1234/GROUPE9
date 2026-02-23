@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Favoris{% endblock %}
+{% block page_title %}Mes Favoris{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Favorites List -->
+    <div class="card">
+        <h2 class="card-title">Offres Sauvegardées</h2>
+        
+        <!-- Empty State -->
+        <div style="padding: 40px; text-align: center; color: #94a3b8;">
+            <i class="fas fa-star" style="font-size: 64px; margin-bottom: 20px; display: block; color: #fbbf24;"></i>
+            <h3 style="color: #64748b; margin-bottom: 10px;">Aucun favori</h3>
+            <p>Parcourez les offres d'emploi et ajoutez vos préférées ici.</p>
+            <a href="/job-offers" class="btn btn-primary" style="margin-top: 16px; justify-content: center;">
+                <i class="fas fa-search"></i> Parcourir les offres
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="card">
+        <h2 class="card-title">Filtres</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" checked>
+                <span>Récents</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox">
+                <span>Par Compatibilité</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox">
+                <span>Par Entreprise</span>
+            </label>
+        </div>
+    </div>
+</div>
+{% endblock %}

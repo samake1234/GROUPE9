@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobMatch - Analyseur de Compatibilité CV</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-design.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}">
+    <style>
+        /* Loader au démarrage */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loader-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            margin: 20px auto;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loader-text {
+            font-size: 1.1em;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+
+<body class="home-page">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-content">
+            <div class="loader-icon">📄</div>
+            <div class="loader-spinner"></div>
+            <div class="loader-text">JobMatch</div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <!-- Brand Logo -->
+            <div class="navbar-brand">
+                <a href="#home" class="logo" onclick="scrollToSection(event, 'home')">
+                    <div class="logo-wrapper">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="JobMatch Logo"
+                            class="logo-image">
+                        <span class="logo-text">JobMatch</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Desktop Menu (Minimalist Core) -->
+            <ul class="navbar-menu" id="navbar-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link active" onclick="scrollToSection(event, 'home')">
+                        <span class="nav-text">Accueil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#features" class="nav-link" onclick="scrollToSection(event, 'features')">
+                        <span class="nav-text">Fonctionnalités</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#trends" class="nav-link" onclick="scrollToSection(event, 'trends')">
+                        <span class="nav-text">Tendances</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link" onclick="scrollToSection(event, 'about')">
+                        <span class="nav-text">À propos</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Right Side Actions -->
+            <div class="navbar-actions">
+                <!-- Controls -->
+                <div class="navbar-controls">
+                    <a href="/dashboard" class="btn-icon" title="Dashboard">
+                        <span class="icon">📊</span>
+                    </a>
+                    <a href="/cv-improver" class="btn-icon" title="Améliorer votre CV">
+                        <span class="icon">✨</span>
+                    </a>
+
+                </div>
+
+                <!-- Auth Buttons -->
+                <div class="navbar-auth">
+                    <a href="/login" class="btn-nav btn-nav-secondary">
+                        <span>Connexion</span>
+                    </a>
+                    <a href="/register" class="btn-nav btn-nav-primary">
+                        <span>S'inscrire</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobile-overlay"></div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <div class="mobile-menu-header">
+                <div class="mobile-logo">
+                    <span class="logo-icon">📄</span>
+                    <span class="logo-text">JobMatch</span>
+                </div>
+                <button class="mobile-close" id="mobile-close" aria-label="Fermer le menu">
+                    <span>✕</span>
+                </button>
+            </div>
+            <ul class="mobile-menu-list">
+                <li><a href="#home" class="mobile-link active"
+                        onclick="closeMobileMenu(); scrollToSection(event, 'home')">
+                        <span class="nav-icon">🏠</span> Accueil
+                    </a></li>
+                <li><a href="#features" class="mobile-link"
+                        onclick="closeMobileMenu(); scrollToSection(event, 'features')">
+                        <span class="nav-icon">✨</span> Fonctionnalités
+                    </a></li>
+                <li><a href="#trends" class="mobile-link" onclick="closeMobileMenu(); scrollToSection(event, 'trends')">
+                        <span class="nav-icon">📈</span> Tendances
+                    </a></li>
+                <li><a href="#about" class="mobile-link" onclick="closeMobileMenu(); scrollToSection(event, 'about')">
+                        <span class="nav-icon">ℹ️</span> À propos
+                    </a></li>
+                <li><a href="#faq" class="mobile-link" onclick="closeMobileMenu(); scrollToSection(event, 'faq')">
+                        <span class="nav-icon">❓</span> FAQ
+                    </a></li>
+                <li><a href="#contact" class="mobile-link"
+                        onclick="closeMobileMenu(); scrollToSection(event, 'contact')">
+                        <span class="nav-icon">📞</span> Contact
+                    </a></li>
+                <li><a href="/dashboard" class="mobile-link" style="color: var(--primary);">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a></li>
+                <li><a href="/cv-improver" class="mobile-link" style="color: var(--primary);">
+                        <span class="nav-icon">✨</span> Améliorer CV
+                    </a></li>
+            </ul>
+            <div class="mobile-menu-footer">
+                <a href="/login" class="btn-mobile btn-mobile-secondary" onclick="closeMobileMenu()">Connexion</a>
+                <a href="/register" class="btn-mobile btn-mobile-primary" onclick="closeMobileMenu()">S'inscrire</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- History Sidebar -->
+    <div class="history-sidebar" id="history-sidebar">
+        <div class="history-header">
+            <h3>📋 Historique</h3>
+            <button class="btn-close" onclick="toggleHistory()">✕</button>
+        </div>
+        <div class="history-list" id="history-list">
+            <p class="empty-message">Aucune analyse pour le moment</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="home" class="hero-section">
+            <!-- Hero Carousel -->
+            <div class="hero-carousel">
+                <div class="carousel-slides">
+                    <div class="carousel-slide active"
+                        style="background-image: linear-gradient(135deg, rgba(0, 78, 137, 0.8) 0%, rgba(10, 46, 92, 0.8) 100%), url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1920&auto=format&fit=crop');">
+                        <div class="slide-content">
+                            <h2>Optimisez votre CV</h2>
+                            <p>Analysez la compatibilité de votre CV avec les offres d'emploi</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide"
+                        style="background-image: linear-gradient(135deg, rgba(255, 107, 53, 0.8) 0%, rgba(255, 140, 66, 0.8) 100%), url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&auto=format&fit=crop');">
+                        <div class="slide-content">
+                            <h2>Découvrez les mots-clés manquants</h2>
+                            <p>Identifiez les termes importants à ajouter dans votre CV</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide"
+                        style="background-image: linear-gradient(135deg, rgba(46, 204, 113, 0.8) 0%, rgba(39, 174, 96, 0.8) 100%), url('https://images.unsplash.com/photo-1486312338219-ce68e2c6f44d?w=1920&auto=format&fit=crop');">
+                        <div class="slide-content">
+                            <h2>Augmentez vos chances</h2>
+                            <p>Maximisez votre taux de réponse aux offres d'emploi</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide"
+                        style="background-image: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%), url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=1920&auto=format&fit=crop');">
+                        <div class="slide-content">
+                            <h2>Analyse en temps réel</h2>
+                            <p>Obtenez des résultats instantanés et des recommandations personnalisées</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carousel Navigation -->
+                <button class="carousel-btn carousel-prev" onclick="changeSlide(-1)">❮</button>
+                <button class="carousel-btn carousel-next" onclick="changeSlide(1)">❯</button>
+
+                <!-- Carousel Indicators -->
+                <div class="carousel-indicators">
+                    <span class="indicator active" onclick="goToSlide(0)"></span>
+                    <span class="indicator" onclick="goToSlide(1)"></span>
+                    <span class="indicator" onclick="goToSlide(2)"></span>
+                    <span class="indicator" onclick="goToSlide(3)"></span>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="hero-content">
+                    <h1>📄 JobMatch</h1>
+                    <p class="hero-subtitle">Optimisez votre candidature en temps réel</p>
+                    <p class="hero-description">Comparez votre CV avec l'offre d'emploi pour obtenir un score de
+                        matching et découvrir les mots-clés à ajouter.</p>
+                    <a href="#analyzer" class="btn btn-cta">Commencer l'analyse →</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+
+        <div class="divider"></div>
+
+        <!-- Features Section -->
+        <section id="features" class="features-section">
+            <div class="container">
+                <h2>✨ Fonctionnalités</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Score de Compatibilité</h3>
+                        <p>Obtenez un score précis basé sur la similarité textuelle et la couverture des mots-clés</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔑</div>
+                        <h3>Mots-clés Manquants</h3>
+                        <p>Découvrez les termes importants à ajouter dans votre CV pour augmenter vos chances</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💡</div>
+                        <h3>Recommandations</h3>
+                        <p>Recevez des conseils personnalisés pour optimiser votre candidature</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Analyse Instantanée</h3>
+                        <p>Résultats en moins de 2 secondes avec notre technologie performante</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📄</div>
+                        <h3>Support PDF</h3>
+                        <p>Uploadez directement votre CV en PDF, c'est simple et sécurisé</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Configuration Flexible</h3>
+                        <p>Ajustez les paramètres selon vos besoins avec notre interface intuitive</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Analyzer Section -->
+        <section id="analyzer" class="analyzer-section">
+            <div class="container">
+                <div class="subtitle">
+                    <h2>🔍 Analyseur de Compatibilité</h2>
+                    <p>3 étapes simples pour optimiser votre candidature</p>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Input Section -->
+                <section class="input-section">
+                    <div class="row">
+                        <!-- CV Upload -->
+                        <div class="col-md-6">
+                            <div class="input-card">
+                                <div class="upload-container">
+                                    <div class="upload-box" id="dropZone">
+                                        <input type="file" id="pdf_file" accept=".pdf" class="file-input">
+
+                                        <div class="upload-content">
+                                            <div class="upload-icon-wrapper">
+                                                <span class="upload-icon">📄</span>
+                                                <span class="upload-plus">+</span>
+                                            </div>
+
+                                            <h3 class="upload-title">Déposez votre CV ici</h3>
+                                            <p class="upload-subtitle">ou cliquez pour sélectionner</p>
+
+                                            <div class="upload-specs">
+                                                <span class="spec-item">📋 PDF uniquement</span>
+                                                <span class="spec-item">⚡ Jusqu'à 10 MB</span>
+                                                <span class="spec-item">✓ Sécurisé</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="file-preview" id="filePreview" style="display: none;">
+                                            <div class="preview-content">
+                                                <span class="preview-icon">✓</span>
+                                                <p class="preview-name" id="previewName"></p>
+                                                <p class="preview-size" id="previewSize"></p>
+                                                <button type="button" class="btn-remove" onclick="clearFile()">✕
+                                                    Supprimer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="help-text">💡 Astuce: Assurez-vous que votre CV contient les mots-clés de
+                                    l'offre</p>
+                            </div>
+                        </div>
+
+                        <!-- Job Offer -->
+                        <div class="col-md-6">
+                            <div class="input-card">
+                                <div class="textarea-wrapper">
+                                    <h3 class="textarea-title">📋 Collez l'offre d'emploi</h3>
+                                    <textarea id="job_offer" class="textarea textarea-premium" placeholder="Collez ici le texte complet de l'offre d'emploi...
+                                        
+Exemple:
+Nous recherchons un Développeur Python Senior avec 5 ans d'expérience..."></textarea>
+
+                                    <div class="textarea-info">
+                                        <button type="button" id="btn-generate-ai" class="btn-generate-ai"
+                                            title="Générer une offre d'emploi réaliste via l'IA">
+                                            <span class="btn-icon">✨</span>
+                                            <span class="btn-text">Générer via IA</span>
+                                        </button>
+                                        <div class="char-count">
+                                            <span id="charCount">0</span> / 5000 caractères
+                                        </div>
+                                        <p class="help-text">Minimum 50 caractères pour une analyse complète</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="divider"></div>
+
+                <!-- Configuration Section -->
+                <section class="config-section">
+                    <div class="config-card">
+                        <h3>⚙️ Configuration</h3>
+                        <div class="config-item">
+                            <label for="threshold">Seuil de pertinence des mots-clés:</label>
+                            <div class="slider-container">
+                                <input type="range" id="threshold" min="1" max="10" value="3" class="slider">
+                                <span id="threshold-value">3</span>
+                            </div>
+                            <p class="help-text">Nombre minimum d'occurrences pour considérer un mot-clé</p>
+                        </div>
+                        <div class="config-item">
+                            <label>
+                                <input type="checkbox" id="show_details" checked>
+                                Afficher l'analyse détaillée
+                            </label>
+                        </div>
+                        <div class="config-item">
+                            <a href="/download-cv-template" class="btn-download">
+                                📥 Télécharger un modèle de CV
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="divider"></div>
+
+                <!-- Advanced Options -->
+                <section class="advanced-options glass" style="padding: 30px; border-radius: 20px; margin-top: 40px;">
+                    <div class="options-tabs">
+                        <button class="tab-btn active" onclick="showTab('analyze-tab')">📊 Analyse Simple</button>
+                        <button class="tab-btn" onclick="showTab('compare-tab')">⚖️ Comparer CV</button>
+                        <button class="tab-btn" onclick="showTab('suggestions-tab')">💡 Suggestions</button>
+                    </div>
+
+                    <!-- Analyze Tab -->
+                    <div id="analyze-tab" class="tab-content active">
+                        <div class="button-section">
+                            <button id="analyze-btn" class="btn btn-primary btn-lg">
+                                <span class="btn-text">🔍 Analyser la compatibilité</span>
+                                <span class="btn-loading" style="display: none;">⏳ Analyse en cours...</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Compare Tab -->
+                    <div id="compare-tab" class="tab-content">
+                        <div class="compare-section">
+                            <h3>⚖️ Comparer Plusieurs CV</h3>
+                            <p class="help-text">Sélectionnez plusieurs CV pour les comparer avec la même offre</p>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="compare_files" accept=".pdf" multiple class="file-input">
+                                <label for="compare_files" class="file-label">
+                                    <span id="compare-files-names">Sélectionnez 2 CV ou plus (PDF)</span>
+                                    <i class="icon">📁</i>
+                                </label>
+                            </div>
+                            <button id="compare-btn" class="btn btn-primary" style="margin-top: 20px;">
+                                <span class="btn-text">⚖️ Comparer les CV</span>
+                                <span class="btn-loading" style="display: none;">⏳ Comparaison...</span>
+                            </button>
+                            <div id="compare-results" style="display: none; margin-top: 30px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions Tab -->
+                    <div id="suggestions-tab" class="tab-content">
+                        <div class="suggestions-section">
+                            <h3>💡 Suggestions de Reformulation</h3>
+                            <p class="help-text">Obtenez des suggestions pour améliorer votre CV</p>
+                            <button id="suggestions-btn" class="btn btn-primary">
+                                <span class="btn-text">💡 Obtenir des suggestions</span>
+                                <span class="btn-loading" style="display: none;">⏳ Analyse...</span>
+                            </button>
+                            <div id="suggestions-results" style="display: none; margin-top: 30px;"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Section (Hidden by default) -->
+                <section id="results-section" class="results-section" style="display: none;">
+                    <div class="divider"></div>
+
+                    <!-- Results Actions -->
+                    <div class="results-actions">
+                        <button class="btn btn-small" onclick="copyResults()" title="Copier les résultats">📋
+                            Copier</button>
+                        <button class="btn btn-small" onclick="shareViaEmail()" title="Partager par email">📧
+                            Partager</button>
+                        <button class="btn btn-small" onclick="exportPDFReal()" title="Exporter en PDF">📥 Exporter
+                            PDF</button>
+                        <button class="btn btn-small btn-premium-trigger" onclick="generatePremiumCV()"
+                            title="Générer un CV Premium basé sur vos infos">✨ CV Premium</button>
+                        <button class="btn btn-small" onclick="newAnalysis()" title="Nouvelle analyse">🔄 Nouvelle
+                            analyse</button>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Status Message -->
+                    <div id="status-message" class="status-message"></div>
+
+                    <!-- Scores -->
+                    <section class="scores-section">
+                        <h2>📊 Score de Compatibilité</h2>
+                        <div class="scores-grid">
+                            <div class="score-box">
+                                <div id="main-score" class="score-value score-high">--</div>
+                                <p class="score-label">Score Global</p>
+                            </div>
+                            <div class="score-box">
+                                <div class="score-metric">
+                                    <span id="similarity-score">--</span>%
+                                </div>
+                                <p class="score-label">Similarité Textuelle</p>
+                            </div>
+                            <div class="score-box">
+                                <div class="score-metric">
+                                    <span id="coverage-score">--</span>%
+                                </div>
+                                <p class="score-label">Couverture Mots-clés</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="divider"></div>
+
+                    <!-- Recommendation -->
+                    <section class="recommendation-section">
+                        <h2>💡 Recommandations</h2>
+                        <div id="recommendation-box" class="recommendation-box"></div>
+                    </section>
+
+                    <div class="divider"></div>
+
+                    <!-- Missing Keywords -->
+                    <section class="keywords-section">
+                        <h2>🔑 Mots-clés à ajouter dans votre CV</h2>
+                        <p class="keywords-description">Ces termes apparaissent dans l'offre mais pas dans votre CV.
+                            Intégrez-les si pertinent pour votre profil:</p>
+                        <div id="missing-keywords" class="keywords-grid"></div>
+                    </section>
+
+                    <div class="divider"></div>
+
+                    <!-- Detailed Analysis -->
+                    <section id="detailed-section" class="detailed-section" style="display: none;">
+                        <h2>📈 Analyse Détaillée</h2>
+                        <div class="detail-grid">
+                            <div class="detail-card">
+                                <h3>Mots-clés de votre CV (Top 10)</h3>
+                                <ul id="cv-keywords" class="keywords-list"></ul>
+                            </div>
+                            <div class="detail-card">
+                                <h3>Mots-clés de l'offre (Top 10)</h3>
+                                <ul id="job-keywords" class="keywords-list"></ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="divider"></div>
+
+                    <!-- Tips -->
+                    <section class="tips-section">
+                        <h2>💼 Conseils d'optimisation</h2>
+                        <div class="tips-grid">
+                            <div class="tip-card tip-info">
+                                <p>✏️ <strong>Secteur/métier</strong> - Vérifiez que votre titre de poste correspond</p>
+                            </div>
+                            <div class="tip-card tip-info">
+                                <p>🎯 <strong>Compétences techniques</strong> - Listez les technologies demandées</p>
+                            </div>
+                            <div class="tip-card tip-info">
+                                <p>📚 <strong>Expérience</strong> - Quantifiez vos réalisations avec des chiffres</p>
+                            </div>
+                            <div class="tip-card tip-info">
+                                <p>🗣️ <strong>Langues</strong> - Mentionnez les langues requises</p>
+                            </div>
+                            <div class="tip-card tip-info">
+                                <p>🏆 <strong>Certifications</strong> - Ajoutez les certifications pertinentes</p>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Trends Section -->
+        <section id="trends" class="trends-section">
+            <div class="container">
+                <h2>📈 Tendances du Marché</h2>
+                <p class="section-description">Découvrez les mots-clés et compétences les plus demandés sur le marché
+                </p>
+
+                <div class="trends-grid">
+                    <div class="trend-card">
+                        <h3>🔥 Mots-clés Tendance</h3>
+                        <div id="trends-keywords" class="trends-list"></div>
+                    </div>
+                    <div class="trend-card">
+                        <h3>💼 Secteurs en Demande</h3>
+                        <div id="trends-sectors" class="trends-list"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="loadTrends()" style="margin-top: 30px;">
+                    <span>🔄 Actualiser les tendances</span>
+                </button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="faq-section">
+            <div class="container">
+                <h2>❓ Questions Fréquentes</h2>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>📌 Comment fonctionne le score de compatibilité?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Le score combine deux facteurs: la <strong>similarité textuelle</strong> (60%) et la
+                                <strong>couverture des mots-clés</strong> (40%). Plus le score est élevé, mieux votre CV
+                                correspond à l'offre.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>🔑 Quel est le meilleur score?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p><strong>70+</strong> = Excellent match ✅ | <strong>50-70</strong> = Bon potentiel ⚠️ |
+                                <strong>&lt;50</strong> = À améliorer ℹ️
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>📄 Quels formats de CV sont acceptés?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Actuellement, seuls les fichiers <strong>PDF</strong> sont acceptés. Assurez-vous que
+                                votre CV est bien formaté et lisible.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>⚙️ À quoi sert le seuil de pertinence?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Le seuil détermine le nombre minimum d'occurrences d'un mot-clé dans l'offre pour qu'il
+                                soit considéré comme important. Augmentez-le pour des termes plus génériques.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>🔒 Mes données sont-elles sécurisées?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Oui! Vos fichiers sont traités localement et <strong>jamais stockés</strong> sur nos
+                                serveurs. Nous respectons votre vie privée.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>💾 Puis-je exporter mes résultats?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Oui! Vous pouvez <strong>exporter en PDF</strong>, copier les résultats ou les partager
+                                directement via email.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- About Section -->
+        <section id="about" class="about-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>À propos de JobMatch</h2>
+                    <p class="section-subtitle">Votre partenaire intelligent pour la réussite professionnelle</p>
+                </div>
+
+                <div class="about-content">
+                    <!-- Left: Text Content -->
+                    <div class="about-left">
+                        <div class="about-text">
+                            <h3>Notre Mission</h3>
+                            <p>JobMatch est un outil intelligent qui utilise les dernières technologies de traitement de
+                                texte et d'apprentissage automatique pour analyser la compatibilité entre votre CV et
+                                une offre d'emploi.</p>
+                            <p>Notre mission est de <strong>simplifier votre recherche d'emploi</strong> en vous aidant
+                                à optimiser vos candidatures pour maximiser vos chances de succès.</p>
+                        </div>
+
+                        <div class="about-text">
+                            <h3>Comment ça marche?</h3>
+                            <p>Notre système analyse en profondeur:</p>
+                            <ul class="about-list">
+                                <li>✓ Les compétences clés requises</li>
+                                <li>✓ Les mots-clés manquants</li>
+                                <li>✓ L'alignement avec le profil</li>
+                                <li>✓ Les points forts à mettre en avant</li>
+                            </ul>
+                        </div>
+
+                        <div class="about-text">
+                            <h3>Pourquoi nous choisir?</h3>
+                            <p>Grâce à notre analyse approfondie, vous saurez exactement quels éléments renforcer dans
+                                votre CV pour correspondre au profil recherché. Nous fournissons des recommandations
+                                précises et actionnables.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Stats & Features -->
+                    <div class="about-right">
+                        <div class="about-stats">
+                            <div class="stat-item">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-value">5000+</div>
+                                <div class="stat-label">Candidats aidés</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-value">95%</div>
+                                <div class="stat-label">Satisfaction</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">⚡</div>
+                                <div class="stat-value">2s</div>
+                                <div class="stat-label">Analyse rapide</div>
+                            </div>
+                        </div>
+
+                        <div class="about-benefits">
+                            <h3>Avantages</h3>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🎯</span>
+                                <div>
+                                    <h4>Analyse Précise</h4>
+                                    <p>Basée sur l'IA et le machine learning</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">📊</span>
+                                <div>
+                                    <h4>Score Détaillé</h4>
+                                    <p>Rapport complet avec recommandations</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🚀</span>
+                                <div>
+                                    <h4>Résultats Immédiats</h4>
+                                    <p>Analyse en 2 secondes seulement</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🔒</span>
+                                <div>
+                                    <h4>Sécurisé</h4>
+                                    <p>Vos données sont confidentielles</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Team Section - Groupe 9 -->
+        <section id="team" class="team-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Notre Équipe - Groupe 9</h2>
+                    <p class="section-subtitle">Les développeurs derrière JobMatch</p>
+                </div>
+
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <span class="avatar-initial">A</span>
+                        </div>
+                        <h3>Abdoulaye Diallo</h3>
+                        <p class="team-role">Développeur Full Stack</p>
+                        <p class="team-bio">Spécialiste en backend et optimisation d'algorithmes ML</p>
+                        <div class="team-socials">
+                            <a href="#" class="social-link" title="LinkedIn">🔗</a>
+                            <a href="#" class="social-link" title="GitHub">💻</a>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <span class="avatar-initial">Y</span>
+                        </div>
+                        <h3>Yousouf Sylla</h3>
+                        <p class="team-role">Développeur Full Stack</p>
+                        <p class="team-bio">Expert en frontend et design UI/UX moderne</p>
+                        <div class="team-socials">
+                            <a href="#" class="social-link" title="LinkedIn">🔗</a>
+                            <a href="#" class="social-link" title="GitHub">💻</a>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <span class="avatar-initial">S</span>
+                        </div>
+                        <h3>Samake Délamou</h3>
+                        <p class="team-role">Data Analyst</p>
+                        <p class="team-bio">Expert en analyse de données et insights statistiques</p>
+                        <div class="team-socials">
+                            <a href="#" class="social-link" title="LinkedIn">🔗</a>
+                            <a href="#" class="social-link" title="GitHub">💻</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-footer">
+                    <p>📧 Contactez-nous: <strong>groupe9@jobmatch.fr</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <h2>📞 Nous Contacter</h2>
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <h3>📧 Email du Groupe</h3>
+                        <p><a href="mailto:groupe9@jobmatch.fr">groupe9@jobmatch.fr</a></p>
+                    </div>
+                    <div class="contact-card">
+                        <h3>� Équipe Groupe 9</h3>
+                        <p>Développeurs passionnés d'IA</p>
+                    </div>
+                    <div class="contact-card">
+                        <h3>🔗 Retrouvez-nous</h3>
+                        <p>LinkedIn & GitHub (Groupe 9)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>JobMatch</h4>
+                    <p>Optimisez votre candidature en temps réel</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Liens Rapides</h4>
+                    <ul>
+                        <li><a href="#home">Accueil</a></li>
+                        <li><a href="#features">Fonctionnalités</a></li>
+                        <li><a href="#about">À propos</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Légal</h4>
+                    <ul>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 JobMatch - Tous droits réservés | Développé avec ❤️ par le **Groupe 9**</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Assistance Chatbox -->
+    <div class="chatbot-wrapper">
+        <button class="chatbot-fab" id="chatbot-fab" aria-label="Aide intelligente">
+            <span class="fab-icon">🤖</span>
+            <span class="fab-badge">1</span>
+        </button>
+
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <span class="bot-status"></span>
+                    <h3>Assistant JobMatch</h3>
+                </div>
+                <button class="btn-close-chat" id="close-chat">✕</button>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    Bonjour ! Je suis l'assistant JobMatch. Comment puis-je vous aider à optimiser votre carrière
+                    aujourd'hui ?
+                </div>
+            </div>
+
+            <div class="chat-actions">
+                <button class="chat-chip" onclick="botHelp('analyzer')">🔍 Analyser un CV</button>
+                <button class="chat-chip" onclick="botHelp('trends')">📈 Tendances</button>
+                <button class="chat-chip" onclick="botHelp('profile')">👤 Mon profil</button>
+                <button class="chat-chip" onclick="botHelp('tips')">💡 Conseils</button>
+            </div>
+
+            <div class="chat-footer">
+                <input type="text" id="chat-input" placeholder="Posez votre question..." autocomplete="off">
+                <button id="send-chat">
+                    <span class="send-icon">🚀</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <script>
+        // Masquer le loader une fois la page entièrement chargée
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attendre un court délai pour que tout soit bien rendu
+            setTimeout(function() {
+                const pageLoader = document.getElementById('pageLoader');
+                if (pageLoader) {
+                    pageLoader.classList.add('hidden');
+                }
+            }, 500);
+        });
+
+        // Failsafe: Masquer après 3 secondes max
+        setTimeout(function() {
+            const pageLoader = document.getElementById('pageLoader');
+            if (pageLoader) {
+                pageLoader.classList.add('hidden');
+            }
+        }, 3000);
+    </script>
+    <script src="{{ url_for('static', filename='js/modern-design.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - JobMatch AI Premium</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-ultra-premium.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="auth-container">
+        <!-- Left Panel - Hero Section -->
+        <div class="auth-left">
+            <!-- Animated Geometric Shapes -->
+            <div class="geometric-shapes">
+                <div class="shape circle"></div>
+                <div class="shape triangle"></div>
+                <div class="shape square"></div>
+            </div>
+
+            <div class="hero-content">
+                <div class="hero-logo">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h1 class="hero-title">JobMatch AI</h1>
+                <p class="hero-subtitle">
+                    Bienvenue dans la révolution du recrutement<br>
+                    <strong>Connectez-vous pour transformer votre carrière</strong>
+                </p>
+                <div class="hero-features">
+                    <div class="hero-feature">
+                        <i class="fas fa-brain"></i>
+                        <span>IA ultra-précise pour votre CV</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="fas fa-chart-line"></i>
+                        <span>10M+ d'offres analysées</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="fas fa-rocket"></i>
+                        <span>Optimisation en temps réel</span>
+                    </div>
+                    <div class="hero-feature">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Sécurité de niveau militaire</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Login Form -->
+        <div class="auth-right">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Bon retour!</h2>
+                    <p>Connectez-vous pour accéder à votre tableau de bord</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form id="login-form" class="auth-form" method="POST">
+                    <div class="form-group">
+                        <label for="email">Adresse Email</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="email" name="email" placeholder="jean@exemple.com" required>
+                        </div>
+                        <span class="error-message" id="email-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('password')">👁️</button>
+                        </div>
+                        <span class="error-message" id="password-error"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox">
+                            <input type="checkbox" name="remember" checked>
+                            <span>Se souvenir de moi</span>
+                        </label>
+                        <a href="/forgot-password" class="forgot-link">Mot de passe oublié?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="login-btn">
+                        <span id="btn-text">Se connecter</span>
+                    </button>
+                </form>
+
+                <div class="form-divider">
+                    <span>ou continuer avec</span>
+                </div>
+
+                <div class="social-login">
+                    <a href="#" class="social-btn google" onclick="socialLogin('google')">
+                        <i class="fab fa-google"></i>
+                        <span>Google</span>
+                    </a>
+                    <a href="#" class="social-btn linkedin" onclick="socialLogin('linkedin')">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="#" class="social-btn github" onclick="socialLogin('github')">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="#" class="social-btn apple" onclick="socialLogin('apple')">
+                        <i class="fab fa-apple"></i>
+                        <span>Apple</span>
+                    </a>
+                </div>
+
+                <div class="register-link">
+                    Pas encore de compte? <a href="/register">Créer un compte</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and submission
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Basic validation
+            let isValid = true;
+            
+            if (!email) {
+                showError('email', 'Veuillez entrer votre email');
+                isValid = false;
+            } else if (!isValidEmail(email)) {
+                showError('email', 'Veuillez entrer une adresse email valide');
+                isValid = false;
+            }
+            
+            if (!password) {
+                showError('password', 'Veuillez entrer votre mot de passe');
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            const submitBtn = document.getElementById('login-btn');
+            const btnText = document.getElementById('btn-text');
+            
+            // Show loading state
+            submitBtn.classList.add('loading');
+            btnText.textContent = 'Connexion...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Show success message
+                showSuccessMessage();
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+                
+            } catch (error) {
+                showError('submit', 'Email ou mot de passe incorrect');
+                submitBtn.classList.remove('loading');
+                btnText.textContent = 'Se connecter';
+                submitBtn.disabled = false;
+            }
+        });
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            if (errorElement) {
+                errorElement.textContent = message;
+            }
+        }
+
+        function showSuccessMessage() {
+            const formContainer = document.querySelector('.form-container');
+            formContainer.innerHTML = `
+                <div class="success-message">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Connexion réussie!</h2>
+                    <p style="margin-bottom: 1rem;">Bienvenue sur JobMatch AI</p>
+                    <p style="opacity: 0.8;">Redirection vers votre tableau de bord...</p>
+                </div>
+            `;
+        }
+
+        // Toggle password visibility
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                field.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+
+        // Social login handlers
+        function socialLogin(provider) {
+            console.log(`Social login with ${provider}`);
+            // Implement social login logic here
+        }
+
+        // Clear errors on input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorElement = document.getElementById(`${this.id}-error`);
+                if (errorElement) {
+                    errorElement.textContent = '';
+                }
+            });
+        });
+
+        // Add animations on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate hero features
+            document.querySelectorAll('.hero-feature').forEach((feature, index) => {
+                feature.style.animationDelay = `${index * 0.2}s`;
+                feature.style.animation = 'slideInLeft 0.6s ease-out forwards';
+            });
+
+            // Animate form elements
+            document.querySelectorAll('.form-group').forEach((group, index) => {
+                group.style.animationDelay = `${index * 0.1}s`;
+                group.style.animation = 'slideInUp 0.6s ease-out forwards';
+                group.style.opacity = '0';
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('login-form').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+
+    <style>
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            animation: slideInDown 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .alert-error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</body>
+</html>
